@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <zabbix_export>
     <version>5.0</version>
-    <date>2020-07-23T07:41:34Z</date>
+    <date>2022-03-28T08:43:18Z</date>
     <groups>
         <group>
             <name>Templates/Applications</name>
@@ -601,11 +601,15 @@ return dockerVersion +
                         <step>
                             <type>JAVASCRIPT</type>
                             <params>var data = JSON.parse(value);
+var dataout = [];
 var ix;
 
 for (ix in data) {
-  var name = data[ix].RepoTags[0];
-  var result = name.match(/dkr\.ecr\..+\.amazon.+\/(.+):(.+)/);
+  if (!('RepoTags' in data[ix]) || data[ix].RepoTags == null) { 
+     continue;
+  }
+  var firsttag  = data[ix].RepoTags[0];
+  var result = firsttag.match(/dkr\.ecr\..+\.amazon.+\/(.+):(.+)/);
   if (result) {
     data[ix].Name = result[2];
     data[ix].Repo = result[1];
@@ -614,6 +618,12 @@ for (ix in data) {
     data[ix].Type = result[2].slice(0, typeIx);
     data[ix].Revision = result[2].slice(typeIx+1, revIx);
     data[ix].Flag = result[2].slice(revIx+1);
+  } else if ( result = firsttag.match(/^(.+\/)?([^\/:]+):(.*)$/) ) {
+    data[ix].Repo = result[1];
+    data[ix].Name = result[2];
+    data[ix].Type = '';
+    data[ix].Revision = result[3];
+    data[ix].Flag = '';
   } else {
     data[ix].Name = data[ix].RepoTags[0];
     data[ix].Repo = name.slice(0, name.indexOf('/'));
@@ -621,9 +631,12 @@ for (ix in data) {
     data[ix].Revision = '';
     data[ix].Flag = '';
   }
+
+  dataout.push(data[ix]);
 };
 
-return JSON.stringify(data);</params>
+return JSON.stringify(dataout);
+</params>
                         </step>
                     </preprocessing>
                 </discovery_rule>
