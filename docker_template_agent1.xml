@@ -690,7 +690,7 @@ return JSON.stringify(dataout);
                             <preprocessing>
                                 <step>
                                     <type>JSONPATH</type>
-                                    <params>$.cpu_stats.cpu_usage.percpu_usage.length()</params>
+                                    <params>$.cpu_stats.online_cpus</params>
                                 </step>
                             </preprocessing>
                             <master_item>
